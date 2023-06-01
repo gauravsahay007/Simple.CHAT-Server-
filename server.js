@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 mongoose.set("strictQuery",true);
 
+
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors());
@@ -30,7 +31,8 @@ require('dotenv').config();
 
 mongoose.connect(process.env.DATABASE,{   
 }).then(()=>{   
-    console.log("DB Connected")
+    console.log("DB Connected..")
+    console.log("Port running on 7000...")
 })
 
 const server = require('http').createServer(app);
