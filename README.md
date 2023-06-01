@@ -1,2 +1,0 @@
-# Simple.CHAT
-Chat App
