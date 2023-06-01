@@ -11,7 +11,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors());
 
-
+require('dotenv').config(); 
 // --------------------------------------------
 // Routes
 
@@ -35,7 +35,7 @@ mongoose.connect(process.env.DATABASE,{
 
 const server = require('http').createServer(app);
 
-const io = require("scoket.io")(server,{
+const io = require("socket.io")(server,{
     cors:{
         origin: "*"
     }
