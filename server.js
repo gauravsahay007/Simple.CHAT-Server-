@@ -1,3 +1,4 @@
+require('dotenv').config(); 
 // DATABASE
 const mongoose = require('mongoose');
 const express = require('express');
@@ -12,17 +13,17 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors());
 const PORT=process.env.PORT || 8080
-require('dotenv').config(); 
+
 // --------------------------------------------
 // Routes 
-
-
-
+const userRoutes = require("./Routes/userRoutes")
 
 // ----------------------------------------------
 
 // ----------------------------------------------
 //APIs
+
+app.use("/api",userRoutes);
 
 
 
@@ -95,5 +96,4 @@ io.on("connection",(socket)=>{
     })
 })
 
-
-                                                     
+server.listen(8080, () => console.log("Server is listening at 6060 .."))                                                  

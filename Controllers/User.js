@@ -1,60 +1,91 @@
 const User = require("../Models/User")
-const validationResult= require("express-validator")
-const jwt=require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
+const { expressjwt: expressJwt } = require("express-jwt");
+const {check, validationResult} = require("express-validator"); 
 const authenticate=require("../Models/User")
-exports.signUp=(req,res)=>{
-    const {name,email,encrypted_password,profile_pic}=req.body;
-    if(!name || !email || !encrypted_password){
-        return res.status(400).json({
-            error:"Please Enter All Fields.."
-        })
-    }
-    const userExists=user.findOne({email});
-    if(userExists){
-        res.status(400).json({
-            error:"User Already Exists"
-        })
+exports.signUp = (req,res) => {
+    const errors = validationResult(req);
 
-        
+    if(!errors.isEmpty()){
+        return res.status(422).json({
+            error : errors.array()[0].msg
+          });
     }
-    const user=User.create({name,email,encrypted_password,profile_pic});
-    if(user){
-        res.status(201).json({
-            _id:user._id,
-            name:user.name,
-            email:user.email,
-            profile_pic:user.profile_pic,
-            // token: generateToken(user._id),
-        })
-    }
-    else{
-        res.status(400).json({
-            error:"Unable to create User"
-        })
-    }
-}
-exports.signIn=(req,res)=>{
-    const {email,encrypted_password}=req.body;
-    User.findOne({email})
-    .then((user,err)=>{
+
+    const user = new User(req.body);
+     user.save().then((user,err) => {
         if(err || !user){
             return res.status(400).json({
-                error:"User Email does not exits"
+                err: "Not able to save user in DATABASE"
             })
         }
-        if(!user.authenticate(encrypted_password)){
-            return res.status(401).json({
-                error : "Email and password donot match"
-            })
-        }
-        const token=jwt.sign({_id:user._id},process.env.SECRET)
-        res.cookie("token",token,{expire: new Date()+9999})
-        const {_id,name,email}=user;
-        return res.json({
-            token,user:{_id,name,email}
+
+        res.json({
+            name: user.name,
+            email: user.email,
+            id: user._id
         })
-    })
+     })
 }
+
+  exports.signIn = (req,res) => {
+    const errors = validationResult(req);
+    const {email, password} = req.body;
+
+    if(!errors.isEmpty()){
+        res.status(422).json({
+            errors: errors.array()[0]
+        })
+    }
+
+    User.findOne({email}).then((user,err)=>{
+        if(err){
+            res.status(400).json({
+                error: "User email doesnot exists"
+            })
+        }
+
+        if(!user.authenticate(password)){
+            return res.status(401).json({
+                error: "Email and password donot match"
+            })
+        }
+
+        const token = jwt.sign({_id: user._id},process.env.SECRET)
+
+        res.cookie("token",token,{expire: new Date()+1})
+
+        const { _id,name,email ,role} = user;
+        return res.json({
+            token,
+            user:{_id,name,email,role}
+        }) 
+    })
+  }
+
+  exports.isSignedIn = expressJwt({
+   
+    secret: process.env.SECRET,
+    algorithms: ["HS256"],
+    
+    userProperty: "auth"
+
+})
+
+exports.isAuthenticated=(req,res,next)=>{
+   
+    const check=req.profile && req.auth && req.profile._id==req.auth._id;
+    
+    if(check==false){
+        return res.status(403).json({
+            error:"User doesn't exist: Access Denied"
+        })
+    }
+   
+    next();
+}
+
+
 //req (request) and res (response) representing the incoming request and the outgoing response, respectively
 exports.storeNotification=(req,res)=>{
     const {userId,messageId,chatId}=req.body;
