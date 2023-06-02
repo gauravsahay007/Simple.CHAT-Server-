@@ -15,6 +15,7 @@ exports.signUp=(req,res)=>{
             error:"User Already Exists"
         })
 
+        
     }
     const user=User.create({name,email,encrypted_password,profile_pic});
     if(user){
@@ -140,7 +141,7 @@ exports.removeNotification=(req,res)=>{
     }
 }
 
-const allUser =  (req, res) => {
+exports.allUser =  (req, res) => {
     // below is ternary operator if req.query.search exists then code before  : will be executed else after : will be executed
     // so if req.query.search exists then keyword will be regularexpression matching with the query.search and $options: "i" shows that it is case insensitive
     // overall keyword is used to search for matching name or email in the User document

@@ -11,7 +11,7 @@ mongoose.set("strictQuery",true);
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors());
-
+const PORT=process.env.PORT || 8080
 require('dotenv').config(); 
 // --------------------------------------------
 // Routes 
@@ -29,13 +29,15 @@ require('dotenv').config();
 
 // ----------------------------------------------
 
+
 mongoose.connect(process.env.DATABASE,{   
 }).then(()=>{   
     console.log("DB Connected..")
-    console.log("Port running on 7000...")
+    console.log(`Port running on ${PORT}...`)
 })
 
 const server = require('http').createServer(app);
+
 
 const io = require("socket.io")(server,{
     cors:{
