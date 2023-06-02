@@ -139,3 +139,27 @@ exports.removeNotification=(req,res)=>{
         })
     }
 }
+
+const allUser =  (req, res) => {
+    // below is ternary operator if req.query.search exists then code before  : will be executed else after : will be executed
+    // so if req.query.search exists then keyword will be regularexpression matching with the query.search and $options: "i" shows that it is case insensitive
+    // overall keyword is used to search for matching name or email in the User document
+    const keyword = req.query.search ? {
+        $or: [
+          { name: { $regex: req.query.search, $options: "i" } },
+          { email: { $regex: req.query.search, $options: "i" } },
+        ],
+      }
+      : {};
+
+    //   In the code snippet you provided, { password: 0 } is an argument passed to the User.find() method as the projection option. It is used to specify which fields to include or exclude in the returned documents.
+   // In this case, { password: 0 } means that the password field will be excluded from the returned documents. The value 0 indicates the field should be omitted from the result set.
+   // By excluding the password field, you can prevent it from being sent in the response to the client. This is a common practice for security reasons, as passwords should not be exposed or sent over the network.
+  
+    const users =User.find(keyword, { password: 0 }).find({
+        // The $ne operator is used in MongoDB to query for documents where a specific field is not equal to a given value. It is often used in combination with other query operators to perform more advanced queries.
+      _id: { $ne: req.user._id },
+    //  eg the query { name: { $ne: "gaurav" } } would match documents where the name field is not equal to "gaurav". It will retrieve all users whose name is different from "gaurav".
+    });
+    res.send(users);
+  };
