@@ -26,7 +26,7 @@ const userSchema=new Schema({
 //picture property with file name as a string
     profile_pic:{
         type:String,
-        required:true
+        required:false
     },
     //schema definition for a notification .It includes two fields:
     //This schema suggests that each notification is associated with a specific chat and references a particular message within that chat.
