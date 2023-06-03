@@ -1,6 +1,6 @@
 //importing express module
 var express = require("express");
-const { signUp, signIn, storeNotification, getNotifications, removeNotification, allUser } = require("../Controllers/User");
+const { signUp, signIn, storeNotification, getNotifications, removeNotification, allUser, isSignedIn} = require("../Controllers/User");
 const {check, validationResult} = require('express-validator');
 var router = express.Router();
 //routes for register user or signup user
@@ -16,10 +16,10 @@ router.post("/signup",[
 )
 //routes for signin user
 router.post("/login",signIn);
-router.post("/storenotification",storeNotification);
-router.get("/getnotification",getNotifications);
-router.put("/deletenotification",removeNotification);
-router.get("/:userId",allUser);
+router.post("/storenotification",isSignedIn,storeNotification);
+router.get("/getnotification",isSignedIn,getNotifications);
+router.put("/deletenotification",isSignedIn,removeNotification);
+router.get("/:userId",isSignedIn,allUser);
 
 module.exports = router;
 

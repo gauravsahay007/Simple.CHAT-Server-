@@ -85,6 +85,24 @@ exports.isAuthenticated=(req,res,next)=>{
     next();
 }
 
+exports.getUserById=(req,res,next,id)=>{
+    try{
+        User.findById(id).then((user,err)=>{
+            if(err || !user){
+                return res.status(400).json({
+                    error:"Oops...There is not any user of this id in the database"
+                }); 
+                
+            }
+            req.profile=user;
+            next();    
+        })
+    }
+    catch(err){
+        console.log("err");
+    }
+  
+};
 
 //req (request) and res (response) representing the incoming request and the outgoing response, respectively
 exports.storeNotification=(req,res)=>{
