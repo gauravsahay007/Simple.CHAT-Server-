@@ -1,5 +1,11 @@
-import express  from "express";
-import { allMessage, sendMessage } from "../Controllers/Message";
+const express  = require("express");
+const { allMessage, sendMessage } = require("../Controllers/Message");
+const {getUserById} = require("../Controllers/User")
+var router = express.Router();
 exports.router=express.Router();
-router.post("/",sendMessage);
-router.get("/:chatId",allMessage);
+
+router.param("userId",getUserById);
+router.post("/message/send/:userId",sendMessage);
+router.get("/:chatId/allmessage",allMessage); 
+
+module.exports=router;

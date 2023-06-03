@@ -1,3 +1,4 @@
+const { json } = require("body-parser");
 const Chat = require("../Models/Chat");
 const User = require("../Models/User");
 
@@ -10,7 +11,7 @@ exports.getChatById=(req,res,next,id)=>{
             })
         }
         
-        chat.profile = chat;
+        req.chatprofile = chat;
         next();
     }
     )
@@ -19,11 +20,13 @@ exports.getChatById=(req,res,next,id)=>{
 // accessing chats of requesting user and another user from the request
 exports.accessChat=(req,res)=>{
     // Id of the user from the request
-    const userId = req.body.userId;
+    let userId = req.body.userId;
 
     if(!userId){
         console.log("No userId found in the request");
-        return res.status(400);
+        return res.status(400).json({
+            sucess: "created chat"
+        });
     }
 
     
@@ -41,31 +44,33 @@ exports.accessChat=(req,res)=>{
         // we then want the user details excludind there passwords and the latest messages
     ).populate("users","-password")
     .populate("latestMessage");
+    // console.log(isChat);
 
         // we then populate isChat with user name pic and email of the sender here the sender is the user in the requested body
     isChat = User.populate(isChat, {
         path: "latestMessage.sender",
         select: "name pic email"
-    })
-
-    // if any chat found then return it
-    if(isChat.length > 0) {
-        res.send(isChat)
+    }).then((response,err)=>{
+         // if any chat found then return it
+    if(response.length > 0) {
+        res.send(response)
+    
     }
-    else{
+    else if(response.length==0){
         // else create a new chat 
         var ChatData = {
             chatName: `${req.body.name}`,
             isGroupChat: false,
             users: [userId, req.profile._id]
         }
-    }
+    
 
     try{
         // to save the created Chat in the database
         const createdChat = new Chat(ChatData);
 
         createdChat.save().then(response => {
+            return res.json(response);
             console.log("New Chat created");
         }).catch((err)=>{
             console.log(err);
@@ -74,6 +79,13 @@ exports.accessChat=(req,res)=>{
     catch(err){
         res.status(400);
     }
+        
+    }
+
+    else return res.status(400);
+})
+
+   
 }
 
 
@@ -89,16 +101,20 @@ exports.fetchChats=(req,res)=>{
         .populate("groupAdmin","-password")
         .populate("latestMessage")
         .sort({updatedAt : -1})
-        .then((chats)=>{
+        .then((chats,err)=>{
+           
+            if(err) res.json({
+                error: err
+            })
             // further populating chats name pic email of the senders 
             chats = User.populate(
                 chats, {
                     path: "latestMessage.sender",
                     select: "name pic email"
                 }
-            )
-
-            res.satus(200).send(chats);
+            )    
+            // console.log(chats);
+            res.status(200).json(chats);
         })
     }
     catch(err){
@@ -111,12 +127,12 @@ exports.fetchChats=(req,res)=>{
 
 exports.createGroupChat = (req,res) => {
     // retrieving users that will be in the group Chat and the group name
-    if(!res.body.users || !req.body.name){
+    if(!req.body.users || !req.body.name){
         return res.status(400).send({ message: "Please Fill all the fields" });
     }
 
     // parse the users array
-    var users = JSON.parse(req.body.users);
+    var users = (req.body.users);
 
     if(users.length<2){
         return res
@@ -156,15 +172,17 @@ exports.renameGroup = (req,res) => {
     {
         new: true,
         useFindAndModify: false
+    }).then((resp,err)=>{
+        if(err){
+            res.status(400).json({
+                error:"Chat not found"
+            })
+        }else{
+            res.json(resp)
+        }
     })
 
-    if(!updatedChat){
-        res.status(400).json({
-            error:"Chat not found"
-        })
-    }else{
-        res.json(updatedChat)
-    }
+   
     }
 
 exports.addMember = (req,res) => {
@@ -176,15 +194,17 @@ exports.addMember = (req,res) => {
         new: true,
         useFindAndModify: false
     }).populate("users","-password")
-    .populate("groupAdmin","-password")
+    .populate("groupAdmin","-password").then((resp,err)=>{
+        if(err){
+            res.status(404).json({
+                error: "Chat not found"
+            })
+        }else{
+            res.json(resp);
+        }
+    })
 
-    if(!added){
-        res.status(404).json({
-            error: "Chat not found"
-        })
-    }else{
-        res.json(added);
-    }
+   
 }
 
 exports.removeMember = (req,res) => {
@@ -200,14 +220,18 @@ exports.removeMember = (req,res) => {
         }
     )
     .populate("users","-password")
-    .populate("groupAdmin","-password");
+    .populate("groupAdmin","-password").then((resp,err)=>{
+        if(err){
+            res.status(404).json({
+                error:  "Chat not found"
+            })
+        }else{
+            res.json(resp);
+        }
+    })
 
 
-    if(!removed){
-        res.status(404).json({
-            error:  "Chat not found"
-        })
-    }else{
-        res.json(removed)
-    }
+   
 }
+
+
