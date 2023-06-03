@@ -8,39 +8,50 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 mongoose.set("strictQuery",true);
 
-
+// -------------------------------------------
+// Parsers
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors());
+// -------------------------------------------
+
+
 const PORT=process.env.PORT || 8080
+
 
 // --------------------------------------------
 // Routes 
 const userRoutes = require("./Routes/userRoutes");
 const chatRoutes = require("./Routes/chatRoutes");
-
+const messageRoutes = require("./Routes/messageRoutes");
 // ----------------------------------------------
+
 
 // ----------------------------------------------
 //APIs
 app.use("/api",userRoutes);
 app.use("/api",chatRoutes);
+app.use("/api",messageRoutes);
+// ----------------------------------------------
 
 
 
 
 // ----------------------------------------------
-
-
+// Database connection
 mongoose.connect(process.env.DATABASE,{   
 }).then(()=>{   
     console.log("DB Connected..")
     console.log(`Port running on ${PORT}...`)
 })
+// ----------------------------------------------
 
+
+
+
+// ----------------------------------------------
+// socket.io sever
 const server = require('http').createServer(app);
-
-
 const io = require("socket.io")(server,{
     cors:{
         origin: "*"
