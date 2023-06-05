@@ -3,6 +3,8 @@ const jwt = require("jsonwebtoken");
 const { expressjwt: expressJwt } = require("express-jwt");
 const {check, validationResult} = require("express-validator"); 
 const authenticate=require("../Models/User")
+const Chat = require("./Chat")
+const Message = require("./Message");
 exports.signUp = (req,res) => {
     const errors = validationResult(req);
 
@@ -114,80 +116,54 @@ exports.storeNotification=(req,res)=>{
      {$push : {notifications:{chat: chatId,message:messageId}},},
      {new:true},   
      
-        )
-        //sends an HTTP status code 204 (No Content) as the response.
-        res.status(204);
-        if(!stored){
-//sets the HTTP status code of the response to 400 (Bad Request). It indicates that there was an error in the request.
-            res.status(400).json({
-                error:"Notification can't be stored"
-            })
-        }
+        ).then((resp,err)=>{
+            if(err){
+                res.status(400).json({
+                    error:"Notification can't be stored"
+                })
+            }
+            else{
+                res.json(resp)
+            }
+        })
+   
 }
 exports.getNotifications=(req,res)=>{
 //extract the id property from the req.params object. 
 //It expects the id to be provided as a route parameter.
-    const id=req.params;
+    const id=req.profile._id;
 
-    const notifications=User
-//This line retrieves a user document from the database based on the provided id
-    .findById(id)
-//.populate("notifications.message", 'sender content chat'):
-// This line populates the notifications.message field of the 
-//notifications document with the corresponding message document. 
-//It specifies the fields to include in the populated message 
-//document: 'sender', 'content', and 'chat'.
-    .populate("notifications.message",'sender content chat')
-//This line selects only the notifications field from the retrieved
-// user document. It limits the returned document to include only the notifications field.
-    .select("notifications");
-//populates additional fields in the notifications document
-    notifications=User.populate(notifications,{
-        path:'notifications',
-        populate:{
-            path:'message.chat',
-            populate:{
-                path:'users',
-                select:'name',
-                model: User
-            },
-            select: "chatName isGroupChat users",
-            model : Chat
-        }
-    })
-    res.status(200).send(notifications);
+    var notifications =  User.findById(
+        id,
+      ) 
+       .then((resp,err)=>{
+      
+           
+            console.log(resp);
+              res.status(200).json(resp);
+        })
+    
+    
+
+    
 }
 exports.removeNotification=(req,res)=>{
     const {userId,chatId}=req.body;
     var remove=User
     .findByIdAndUpdate(
         userId,
-        {$pull:{notifications:{chat: chatId}}},
-        {new:true}
+        {$pull:{notifications:{chatId: chatId}}},
+        {new:true }
     )
     .select("notifications")
-    .populate("notifications.message",'sender content chat')
-
-    remove=User
-    .populate(remove,{
-        path: 'notifications',
-        populate:{
-            path:'message-chat',
-            populate:{
-                path: 'users',
-                select:'name',
-                model: User
-            },
-            select: "chatName isGroupChat users",
-            model : Chat
+    .populate("notifications.message",'sender content chat').then((resp,err)=>{
+        if(err){
+           return res.status(400)
+        }
+        else{
+            return res.json(resp);
         }
     })
-    res.status(400).json(removed);
-    if(!removed){
-        res.status(400).json({
-            error:"Notification Can't be removed"
-        })
-    }
 }
 
 exports.allUser =  (req, res) => {
@@ -208,8 +184,13 @@ exports.allUser =  (req, res) => {
   
     const users =User.find(keyword, { password: 0 }).find({
         // The $ne operator is used in MongoDB to query for documents where a specific field is not equal to a given value. It is often used in combination with other query operators to perform more advanced queries.
-      _id: { $ne: req.user._id },
+      _id: { $ne: req.profile._id },
     //  eg the query { name: { $ne: "gaurav" } } would match documents where the name field is not equal to "gaurav". It will retrieve all users whose name is different from "gaurav".
+    }).then((resp,err)=>{
+        if(err){
+            res.status(400);
+        }
+        else res.send(resp);
     });
-    res.send(users);
+    
   };

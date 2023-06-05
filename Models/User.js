@@ -29,13 +29,16 @@ var userSchema = new Schema({
     },
     notifications:[
         {
-            chatId: {
-                type:String
+            chat: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Chat"
             },
-            messageId: {
+
+            message: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "Message",
             }
+             
         }
     ]
 
