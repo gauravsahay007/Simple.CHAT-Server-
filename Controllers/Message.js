@@ -8,10 +8,7 @@ const {getChatById} = require("../Controllers/Chat");
 exports.sendMessage=(req,res)=>{
     const {content, ChatId} = req.body;
 
-    if(!content || ChatId) {
-        console.log("Invalid data");
-        return res.status(400);
-    }
+    
 
     var newMessage = {
         sender : req.profile._id,
@@ -19,12 +16,12 @@ exports.sendMessage=(req,res)=>{
         chat : ChatId
     }
 
-    console.log(newMessage);
+    // console.log(newMessage);
 
     try{
         // https://stackoverflow.com/questions/67063573/usage-of-execpopulate
         var message = new Message(newMessage);
-        console.log(message);
+        // console.log(message);
         message.save().then(msg => {
             // execPopulate() to execute populate
             return msg.populate("sender","name pic email");
@@ -44,10 +41,19 @@ exports.sendMessage=(req,res)=>{
             }
            
         })
-        
-        Chat.findByIdAndUpdate(req.profile._id,{
+        User.findByIdAndUpdate(req.profile._id,{
             // set latest message to this message
-            latestMessage: message
+           $push : {notifications : { message : message._id},
+                    chatId : {ChatId} }
+        }).then((res,err)=>{
+            // console.log(res);
+        })
+        
+        Chat.findByIdAndUpdate(ChatId,{
+            
+            $set: {latestMessage: message}
+        }).then((resp,err)=>{
+            console.log(resp);
         })
     }
     catch{
