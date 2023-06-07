@@ -22,5 +22,6 @@ router.get("/getnotification/:userId",isSignedIn,getNotifications);
 router.put("/deletenotification",isSignedIn,removeNotification);
 router.get("/:userId",isSignedIn,allUser);
 
+
 module.exports = router;
 
