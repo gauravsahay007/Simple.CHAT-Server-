@@ -153,11 +153,11 @@ exports.createGroupChat = (req,res) => {
 
         GroupChat.save().then((chat)=>{
             console.log("Created Group Chat");
-            res.json(GroupChat);
+           return res.json(GroupChat);
         })
     }
     catch(err){
-        res.json({
+       return res.json({
             error: err
         });
     }
