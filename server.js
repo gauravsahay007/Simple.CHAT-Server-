@@ -6,6 +6,7 @@ const app = express();
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+const cloudinary=require("./cloudinary/clodinary")
 mongoose.set("strictQuery",true);
 
 // -------------------------------------------
@@ -103,6 +104,7 @@ io.on("connection",(socket)=>{
             console.log("Error");
         }
       
+
     })
 
     // Triggered when the client sends a "typing" event and passes the room. The event is broadcasted to all clients in the room.
@@ -118,6 +120,12 @@ io.on("connection",(socket)=>{
     socket.off("setup", (userData)=>{
         socket.leave(userData._id)
     })
+})
+
+app.post("/api/cloudinary",(req,res)=>{
+    console.log(req.body);
+    console.log(req.body.data)
+    res.json("I have recieved your data");
 })
 
 server.listen(8080, () => console.log("Server is listening at 8080 .."))                                                  
