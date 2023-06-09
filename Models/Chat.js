@@ -25,6 +25,6 @@ const chatSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         reg: "User"
     }
-},{timestamps: true})
+},{timestamps: true}) 
 
 module.exports = mongoose.model("Chat",chatSchema);

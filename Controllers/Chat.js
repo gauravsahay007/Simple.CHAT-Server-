@@ -10,7 +10,7 @@ exports.getChatById=(req,res,next,id)=>{
                 error: "Oops...there is not a matching chat in database"
             })
         }
-        
+         
         req.chatprofile = chat;
         next();
     }
@@ -86,7 +86,7 @@ exports.accessChat=(req,res)=>{
 })
 
    
-}
+} 
 
 
 
@@ -103,8 +103,9 @@ exports.fetchChats=(req,res)=>{
         .sort({updatedAt : -1})
         .then((chats,err)=>{
            
+            
             if(err) res.json({
-                error: err
+                error: err  
             })
             // further populating chats name pic email of the senders 
             chats = User.populate(
@@ -112,18 +113,22 @@ exports.fetchChats=(req,res)=>{
                     path: "latestMessage.sender",
                     select: "name pic email"
                 }
-            )    
-            // console.log(chats);
-            res.status(200).json(chats);
+            ).then((resp,er)=>{
+                // console.log(resp);
+                return res.status(200).json(resp);
+            })   
+              
+             
+            
         })
     }
     catch(err){
-        res.json({
+      return  res.json({
             error: "Error while fetching chats"
         })
-    }
+    } 
 }
-
+ 
 
 exports.createGroupChat = (req,res) => {
     // retrieving users that will be in the group Chat and the group name
@@ -140,7 +145,7 @@ exports.createGroupChat = (req,res) => {
         .send("More than 2 users are required to form a grouop chat");
     }
 
-    users.push(req.body.user);
+    users.push(req.profile._id);
 
     try{
         // create new GroupCHat with isGroupChat = true
@@ -148,7 +153,7 @@ exports.createGroupChat = (req,res) => {
             isGroupChat: true,
             chatName: req.body.name,
             users: users,
-            groupAdmin: req.body.user
+            groupAdmin: req.profile._id
         })
 
         GroupChat.save().then((chat)=>{
@@ -178,10 +183,11 @@ exports.renameGroup = (req,res) => {
                 error:"Chat not found"
             })
         }else{
+            console.log("Name Changed");
             res.json(resp)
-        }
-    })
-
+    }
+    })  
+ 
    
     }
 
@@ -189,48 +195,56 @@ exports.addMember = (req,res) => {
     const {chatId,userId} = req.body;
     const added = Chat.findByIdAndUpdate(chatId, {
         $push : {users: userId}
-    },
-    {
-        new: true,
+    }, 
+    { 
+        new: true, 
         useFindAndModify: false
     }).populate("users","-password")
     .populate("groupAdmin","-password").then((resp,err)=>{
-        if(err){
+        if(err){ 
             res.status(404).json({
                 error: "Chat not found"
             })
         }else{
+            console.log(resp);
             res.json(resp);
         }
     })
 
-   
-}
+    
+} 
 
 exports.removeMember = (req,res) => {
-    const {chatId, userId} = req.body;
-    const removed = Chat.findByIdAndUpdate(
-        chatId,
-        {
-            $pull: {users: userId},
-        },
-        {
-            new: true,
-            useFindAndModify:false
-        }
-    )
-    .populate("users","-password")
-    .populate("groupAdmin","-password").then((resp,err)=>{
-        if(err){
-            res.status(404).json({
-                error:  "Chat not found"
-            })
-        }else{
-            res.json(resp);
-        }
-    })
-
-
+    try{
+        const {chatId, userId} = req.body;
+        const removed =  Chat.findByIdAndUpdate(
+            chatId,
+            {
+                $pull: {users: userId},
+            },
+            {
+                new: true,
+                useFindAndModify:false
+            }
+        )
+        .populate("users","-password")
+        .populate("groupAdmin","-password").then((resp,err)=>{
+            
+            if(err){
+                res.status(404).json({
+                    error:  "Chat not found"
+                })
+            }else{
+                res.json(resp);
+            }
+        })
+     
+    
+    }
+    catch(err){
+        console.log(err);
+    }
+   
    
 }
 
