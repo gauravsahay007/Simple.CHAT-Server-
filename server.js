@@ -25,6 +25,7 @@ const PORT=process.env.PORT || 8080
 const userRoutes = require("./Routes/userRoutes");
 const chatRoutes = require("./Routes/chatRoutes");
 const messageRoutes = require("./Routes/messageRoutes");
+const { userInfo } = require('os');
 // ----------------------------------------------
 
 
@@ -123,9 +124,31 @@ io.on("connection",(socket)=>{
 })
 
 app.post("/api/cloudinary",(req,res)=>{
-    console.log(req.body);
-    console.log(req.body.data)
-    res.json("I have recieved your data");
+    const {image}=req.body;
+    const uploadedImage=cloudinary.uploader.upload(image,
+
+  {upload_preset: "unsigned_upload",
+     public_id: "profile",
+    allowed_formats:['png','jpg','jpeg','svg','ico','jfif','webp'] }, 
+   
+  function(error, result) {
+    // if(!error){console.log(result.data);}
+    console.log(JSON.stringify({ image: image })); });
+    console.log(res.json(uploadedImage))
+
+    // res.json(result);
+    // res.status(200).json(result)
+    // res.json("I have recieved your data");
+    // try{
+    //     res.status(200).json(uploadedImage);
+    // }
+
+    // catch(err){
+    //    console.log(err);
+    // }
 })
+
+
+
 
 server.listen(8080, () => console.log("Server is listening at 8080 .."))                                                  
