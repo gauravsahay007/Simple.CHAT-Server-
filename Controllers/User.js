@@ -110,25 +110,34 @@ exports.getUserById=(req,res,next,id)=>{
 
 //req (request) and res (response) representing the incoming request and the outgoing response, respectively
 exports.storeNotification=(req,res)=>{
-    const {userId,messageId,chatId}=req.body;
-    //updates a user document in the database identified by the userId
-    const stored=User.findByIdAndUpdate
-    (userId,
-//$push operator to add a new element which contains the chatId and messageId to the notifications array field of the user document
-     {$push : {notifications:{chat: chatId,message:messageId}},},
-     {new:true},   
-     
-        ).then((resp,err)=>{
-            if(err){
-                res.status(400).json({
-                    error:"Notification can't be stored"
-                })
-            }
-            else{
-                res.json(resp)
-            }
+    try{
+        const {userId,messageId,chatId}=req.body;
+    
+        const stored= User.findByIdAndUpdate
+        (userId,
+         {$push : {notifications:{chat: chatId,message:messageId}}},
+         { 
+            new: true, 
+            useFindAndModify: false
+        }).then((resp)=>{
+                    res.json(resp)
+                
+            }).catch(err=>{
+                if(err){
+                    res.status(400).json({
+                        error:"Notification can't be stored"
+                    })
+                }
+            })
+    }
+    catch(err){
+        console.log(err);
+        return res.json({
+            error:err
         })
+    }
    
+     
 }
 exports.getNotifications=(req,res)=>{
 //extract the id property from the req.params object. 
@@ -150,22 +159,33 @@ exports.getNotifications=(req,res)=>{
     
 }
 exports.removeNotification=(req,res)=>{
-    const {userId,chatId}=req.body;
-    var remove=User
-    .findByIdAndUpdate(
-        userId,
-        {$pull:{notifications:{chatId: chatId}}},
-        {new:true }
-    )
-    .select("notifications")
-    .populate("notifications.message",'sender content chat').then((resp,err)=>{
-        if(err){
-           return res.status(400)
-        }
-        else{
-            return res.json(resp);
-        }
-    })
+    try{
+        const {userId, chatId} = req.body;
+        User.findOneAndUpdate(
+            { _id: userId },
+            { $pull: { notifications: { chat: chatId } } },
+            { new: true }
+          )
+            .then(updatedUser => {
+              if (updatedUser) {
+                console.log('Notification deleted successfully');
+                return res.json(updatedUser);
+                
+              } else {
+                console.log('User not found');
+              }
+            })
+            .catch(error => {
+              console.log('Error:', error);
+            });
+    }
+    catch(err){
+        console.log(err);
+        return res.json({
+            error:err
+        })
+    }
+   
 }
 
 exports.allUser =  (req, res) => {

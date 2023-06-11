@@ -201,7 +201,7 @@ exports.addMember = (req,res) => {
         useFindAndModify: false
     }).populate("users","-password")
     .populate("groupAdmin","-password").then((resp,err)=>{
-        if(err){ 
+        if(err){  
             res.status(404).json({
                 error: "Chat not found"
             })

@@ -41,7 +41,7 @@ exports.sendMessage=(req,res)=>{
             }
            
         })
-        User.findByIdAndUpdate(req.profile._id,{
+        User.findOneAndUpdate(req.profile._id,{
             // set latest message to this message
            $push : {notifications : { message : message._id},
                     chatId : {ChatId} }

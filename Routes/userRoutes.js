@@ -17,7 +17,7 @@ router.post("/signup",[
 router.param("userId",getUserById);
 //routes for signin user
 router.post("/login",signIn);
-router.post("/storenotification",isSignedIn,storeNotification);
+router.put("/storenotification",isSignedIn,storeNotification);
 router.get("/getnotification/:userId",isSignedIn,getNotifications);
 router.put("/deletenotification",isSignedIn,removeNotification);
 router.get("/:userId",isSignedIn,allUser);
