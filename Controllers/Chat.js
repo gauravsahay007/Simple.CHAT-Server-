@@ -98,7 +98,7 @@ exports.fetchChats=(req,res)=>{
         Chat.find({
             users: {$elemMatch : {$eq : req.profile._id}}
         }).populate("users","-password")
-        .populate("groupAdmin","-password")
+        .populate("groupAdmin","-password") 
         .populate("latestMessage")
         .sort({updatedAt : -1})
         .then((chats,err)=>{

@@ -108,6 +108,30 @@ exports.getUserById=(req,res,next,id)=>{
   
 };
 
+exports.getUser=(req,res)=>{
+    const id=req.profile._id;
+    try{
+        User.findById(id) .select("-notifications -email -pic").then((user,err)=>{
+            if(err || !user){
+                return res.status(400).json({
+                    error:"Oops...There is not any user of this id in the database"
+                }); 
+                
+            }
+
+            return res.json(user)
+                
+        })
+    } 
+    catch(err){
+        console.log("err");
+    }
+  
+};
+
+
+
+
 //req (request) and res (response) representing the incoming request and the outgoing response, respectively
 exports.storeNotification=(req,res)=>{
     try{
@@ -123,7 +147,7 @@ exports.storeNotification=(req,res)=>{
                     res.json(resp)
                 
             }).catch(err=>{
-                if(err){
+                if(err){ 
                     res.status(400).json({
                         error:"Notification can't be stored"
                     })
@@ -170,21 +194,22 @@ exports.removeNotification=(req,res)=>{
               if (updatedUser) {
                 console.log('Notification deleted successfully');
                 return res.json(updatedUser);
-                
+                 
               } else {
-                console.log('User not found');
-              }
+                // console.log(userId, chatId);
+                // console.log('User not found');
+              } 
             })
             .catch(error => {
-              console.log('Error:', error);
+              console.log('Error', error);
             });
     }
     catch(err){
         console.log(err);
         return res.json({
             error:err
-        })
-    }
+        }) 
+    } 
    
 }
 

@@ -24,11 +24,12 @@ exports.sendMessage=(req,res)=>{
         // console.log(message);
         message.save().then(msg => {
             // execPopulate() to execute populate
-            return msg.populate("sender","name pic email");
+            const x=msg.populate("sender","name pic email")
+            return msg.populate("chat","users");
         })
         .then((msg,err)=>{
             if(err){
-                return res.status(400);
+                 res.status(400);
             }
             else{
                 msg.populate("chat");
@@ -36,50 +37,54 @@ exports.sendMessage=(req,res)=>{
                     path: "chat.users",
                     select: "name pic email"
                 })
+                User.findOneAndUpdate(req.profile._id,{
+                    // set latest message to this message
+                   $push : {notifications : { message : message._id},
+                            chatId : {ChatId} }
+                }).then((res,err)=>{
+                    // console.log(res);
+                })
+                
+                Chat.findByIdAndUpdate(ChatId,{
+                    
+                    $set: {latestMessage: message}
+                }).then((resp,err)=>{
+                    console.log(resp);
+                })
+                return res.json(msg)
 
-                return res.json(msg);
+                
             }
            
-        })
-        User.findOneAndUpdate(req.profile._id,{
-            // set latest message to this message
-           $push : {notifications : { message : message._id},
-                    chatId : {ChatId} }
-        }).then((res,err)=>{
-            // console.log(res);
-        })
-        
-        Chat.findByIdAndUpdate(ChatId,{
-            
-            $set: {latestMessage: message}
-        }).then((resp,err)=>{
-            console.log(resp);
-        })
+        }) 
+      
     }
     catch{
         res.json({
             error: "No message sent"
         })
-    }
+    } 
 }
+const mongoose = require("mongoose");
+const { ObjectId } = require("mongodb");
+exports.allMessage = (req, res) => {
+  const chatId = req.chatprofile._id;
 
-exports.allMessage=(req,res)=>{
-    const {chatId} = req.body;
-    try{
-        //  It specifies the fields to be populated ("sender") and the fields to include from the populated document ("name", "pic", "email")
-        const message = Message.find({chats : {$elemMatch : {$eq : chatId}}}).populate("sender","name pic email").populate("chat").then((resp,err)=>{
-            // console.log(resp);
-            if(err){
-                res.status(400).json({
-                    error: err
-                })
-            }
-            else return res.json(resp);
-        });
-       
-    }
-    catch(err){
-       console.log("error");
-    }
+  try {
+    const objectIdChatId = new ObjectId(chatId);
+
+    const messages =  Message.find({ chat: objectIdChatId })
+    .populate("sender", "name pic email")
+    .populate("chat")
+    .exec().then(resp=>{
+        res.json(resp);
+    })
+ 
+ 
+} catch (error) {
+  console.log(error);
+  res.status(500).json({ error: "Server error" });
 }
+};
+
 
