@@ -1,68 +1,58 @@
-require('dotenv').config(); 
-// DATABASE
-const mongoose = require('mongoose');
-const express = require('express');
+import express from "express";
+import dotenv from "dotenv";
+import connectDB from "./config/db.js";
+import userRoutes from "./Routes/userRoutes.js";
+import chatRoutes from "./Routes/chatRoutes.js";
+import messageRoutes from "./Routes/messageRoutes.js";
+import { notFound, errorHandler } from "./Middleware/errorMiddleware.js";
+import path from 'path'
+import cors from 'cors'
+dotenv.config();
+connectDB();
 const app = express();
-const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
-const cors = require("cors");
-mongoose.set("strictQuery",true);
 
-// -------------------------------------------
-// Parsers
-app.use(bodyParser.json());
-app.use(cookieParser());
+app.use(express.json());
 app.use(cors());
-// -------------------------------------------
+app.use("/api/user", userRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/message", messageRoutes);
+
+//---------------------------Deployment------------------------------------------
+const __dirname1 = path.resolve();
+
+if (process.env.NODE_ENV === 'production') {
+
+  app.use(express.static(path.join(__dirname1, '../client/build')));
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname1, "client", "build", "index.html"));
+  });
+}
+else {
+  app.get("/", (req, res) => {
+    res.send("API is not running");
+  });
+}
 
 
-const PORT=process.env.PORT || 8080
+//---------------------------Deployment------------------------------------------
 
+app.use(notFound);
+app.use(errorHandler);
 
-// --------------------------------------------
-// Routes 
-const userRoutes = require("./Routes/userRoutes");
-const chatRoutes = require("./Routes/chatRoutes");
-const messageRoutes = require("./Routes/messageRoutes");
-// ----------------------------------------------
-
-
-// ----------------------------------------------
-//APIs
-app.use("/api",userRoutes);
-app.use("/api",chatRoutes);
-app.use("/api",messageRoutes);
-// ----------------------------------------------
-
-
-
-
-// ----------------------------------------------
-// Database connection
-mongoose.connect(process.env.DATABASE,{   
-}).then(()=>{   
-    console.log("DB Connected..")
-    console.log(`Port running on ${PORT}...`)
-})
-// ----------------------------------------------
-
-
-
-
-// ----------------------------------------------
-// socket.io sever
+const PORT = process.env.PORT || 5000;
 
 const server = app.listen(
   PORT,
   console.log(`Server is running on Port: ${PORT}`)
 );
 
-const { Server } = require("socket.io");
+import { Server } from "socket.io";
 
 const io = new Server(server, {
   pingTimeout: 60000,
   cors: {
-    origin: "http://localhost:3000",
+    origin: "*",
   },
 });
 
