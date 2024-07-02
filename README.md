@@ -8,6 +8,10 @@
 
 [https://chatapp-4q3k.onrender.com](https://chatapp-4q3k.onrender.com)
 
+<h2>🚀 Frontend Portion</h2>
+
+[https://github.com/gauravsahay007/CHAT_frontend](https://github.com/gauravsahay007/CHAT_frontend)
+
 <h2>Project Screenshots:</h2>
 
 <img src="https://snipboard.io/uOwxZr.jpg" alt="project-screenshot" width="800" height="500/">
