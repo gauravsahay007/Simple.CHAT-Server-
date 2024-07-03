@@ -6,11 +6,11 @@
 
 <h2>🚀 Demo</h2>
 
-[https://chatapp-4q3k.onrender.com](https://chatapp-4q3k.onrender.com)
+[https://chatapp-4q3k.onrender.com](https://chatwithsonali.netlify.app/)
 
 <h2>🚀 Frontend Portion</h2>
 
-[https://github.com/gauravsahay007/CHAT_frontend](https://github.com/gauravsahay007/CHAT_frontend)
+[https://github.com/gauravsahay007/CHAT_frontend](https://github.com/gauravsahay007/Simple.CHAT-Server-)
 
 <h2>Project Screenshots:</h2>
 
