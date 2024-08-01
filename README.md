@@ -6,7 +6,7 @@
 
 <h2>🚀 Demo</h2>
 
-[https://chatapp-4q3k.onrender.com](https://chatwithsonali.netlify.app/)
+[https://chatapp-4q3k.onrender.com](https://chatsimple-ser0.onrender.com/)
 
 <h2>🚀 Frontend Portion</h2>
 
